@@ -1,0 +1,481 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<bpr:release xmlns:bpr="http://www.blueprism.co.uk/product/release">
+    <bpr:name>DX Asset - Tableau Online Integration</bpr:name>
+    <bpr:release-notes>Initial Release</bpr:release-notes>
+    <bpr:created>2020-04-28 04:30:07Z</bpr:created>
+    <bpr:package-id>1009</bpr:package-id>
+    <bpr:package-name>Tableau Online Integration</bpr:package-name>
+    <bpr:user-created-by>bpchris</bpr:user-created-by>
+    <bpr:contents count="1">
+        <webapiservice id="e6e13616-b913-45ba-9087-633d7247a66a" name="Tableau Online Integration" enabled="true" xmlns="http://www.blueprism.co.uk/product/webapiservice">
+            <configuration baseurl="[Base Url]" xmlns="">
+                <actions>
+                    <action id="3121" name="Sign In (Personal Token)" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[Signs you in as a user on the specified site on Tableau Server and returns a credentials token that you use in subsequent calls to the server. ]]></description>
+                        <request httpmethod="POST" urlpath="api/[Api Version]/auth/signin">
+                            <headers />
+                            <bodycontent type="1">
+                                <template><![CDATA[<tsRequest>
+  <credentials personalAccessTokenName="[Token Name]" personalAccessTokenSecret="[Token Secret]" >
+      <site contentUrl="[Content Url]" />
+  </credentials>
+</tsRequest>]]></template>
+                            </bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Token Name" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The name of the personal access token when signing in with a personal access token. The token name is available on a user’s account page on Tableau server or online.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Token Secret" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The secret value of the personal access token when signing in with a personal access token.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Content Url" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The URL of the site to sign in to. ]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters>
+                                <customoutputparameter type="CustomCode" name="Json Response" datatype="text"></customoutputparameter>
+                                <customoutputparameter type="CustomCode" name="Message" datatype="text"></customoutputparameter>
+                            </parameters>
+                            <code><![CDATA[XmlDocument doc = new XmlDocument();
+Json_Response = string.Empty;
+Message = string.Empty;
+
+try
+{
+	//Using regex to remove <?xml .. ?> tag from the xml response content
+	doc.LoadXml(Regex.Replace(Response_Content, "^<?.*? ?>", ""));
+
+	//Convert document 
+	string json = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, true);
+	
+	//Query credentials as the JSON Response
+	JObject o = JObject.Parse(json);
+	JToken jsPath = o.SelectToken("$.credentials");
+
+	Json_Response = jsPath.ToString();
+}
+catch(Exception ex)
+{
+	Message = ex.ToString();
+}]]></code>
+                        </outputparameters>
+                    </action>
+                    <action id="4121" name="Sign In (Impersonate)" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[Login with username and password to sign in and impersonate a specific user on the specified site on Tableau Server and returns a credentials token that you use in subsequent calls to the server.]]></description>
+                        <request httpmethod="POST" urlpath="api/[Api Version]/auth/signin">
+                            <headers />
+                            <bodycontent type="1">
+                                <template><![CDATA[<tsRequest>
+  <credentials name="[Username]" password="[Password]" >
+    <site contentUrl="[Content Url]" />
+  </credentials>
+</tsRequest>]]></template>
+                            </bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Username" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The name of the user when signing in with username and password. ]]></description>
+                            </actionparameter>
+                            <actionparameter name="Password" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The password when signing in with username and password.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Content Url" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The URL of the site to sign in to.]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters>
+                                <customoutputparameter type="CustomCode" name="Json Response" datatype="text"></customoutputparameter>
+                                <customoutputparameter type="CustomCode" name="Message" datatype="text"></customoutputparameter>
+                            </parameters>
+                            <code><![CDATA[XmlDocument doc = new XmlDocument();
+Json_Response = string.Empty;
+Message = string.Empty;
+
+try
+{
+	//Using regex to remove <?xml .. ?> tag from the xml response content
+	doc.LoadXml(Regex.Replace(Response_Content, "^<?.*? ?>", ""));
+
+	//Convert document 
+	string json = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, true);
+	
+	//Query credentials as the JSON Response
+	JObject o = JObject.Parse(json);
+	JToken jsPath = o.SelectToken("$.credentials");
+
+	Json_Response = jsPath.ToString();
+}
+catch(Exception ex)
+{
+	Message = ex.ToString();
+}]]></code>
+                        </outputparameters>
+                    </action>
+                    <action id="5131" name="Query Content Url Site" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[Returns information about the specified site, with the option to return information about the storage space and user count for the site.]]></description>
+                        <request httpmethod="GET" urlpath="api/[Api Version]/sites/[Content Url]?key=contentUrl">
+                            <headers>
+                                <httpheader name="X-Tableau-Auth" value="[Access Token]" />
+                            </headers>
+                            <bodycontent type="0"></bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Content Url" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The URL of the site to get information for.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Access Token" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The authenticate token to consume Tableau endpoint services.]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters>
+                                <customoutputparameter type="CustomCode" name="Json Response" datatype="text"></customoutputparameter>
+                                <customoutputparameter type="CustomCode" name="Message" datatype="text"></customoutputparameter>
+                            </parameters>
+                            <code><![CDATA[XmlDocument doc = new XmlDocument();
+Json_Response = string.Empty;
+Message = string.Empty;
+
+try
+{
+	//Using regex to remove <?xml .. ?> tag from the xml response content
+	doc.LoadXml(Regex.Replace(Response_Content, "^<?.*? ?>", ""));
+
+	//Convert document 
+	string json = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, true);
+	
+	//Query credentials as the JSON Response
+	JObject o = JObject.Parse(json);
+	JToken jsPath = o.SelectToken("$.site");
+
+	Json_Response = jsPath.ToString();
+}
+catch(Exception ex)
+{
+	Message = ex.ToString();
+}]]></code>
+                        </outputparameters>
+                    </action>
+                    <action id="5132" name="Query Site Name" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[Returns information about the specified site, with the option to return information about the storage space and user count for the site.]]></description>
+                        <request httpmethod="GET" urlpath="api/[Api Version]/sites/[Site Name]?key=name">
+                            <headers>
+                                <httpheader name="X-Tableau-Auth" value="[Access Token]" />
+                            </headers>
+                            <bodycontent type="0"></bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Site Name" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The name of the site to get information for.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Access Token" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The authenticate token to consume Tableau endpoint services.]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters>
+                                <customoutputparameter type="CustomCode" name="Json Response" datatype="text"></customoutputparameter>
+                                <customoutputparameter type="CustomCode" name="Message" datatype="text"></customoutputparameter>
+                            </parameters>
+                            <code><![CDATA[XmlDocument doc = new XmlDocument();
+Json_Response = string.Empty;
+Message = string.Empty;
+
+try
+{
+	//Using regex to remove <?xml .. ?> tag from the xml response content
+	doc.LoadXml(Regex.Replace(Response_Content, "^<?.*? ?>", ""));
+
+	//Convert document 
+	string json = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, true);
+	
+	//Query credentials as the JSON Response
+	JObject o = JObject.Parse(json);
+	JToken jsPath = o.SelectToken("$.site");
+
+	Json_Response = jsPath.ToString();
+}
+catch(Exception ex)
+{
+	Message = ex.ToString();
+}]]></code>
+                        </outputparameters>
+                    </action>
+                    <action id="5133" name="Query Workbooks for Site" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[Return the workbooks on site.]]></description>
+                        <request httpmethod="GET" urlpath="api/[Api Version]/sites/[Site Id]/workbooks">
+                            <headers>
+                                <httpheader name="X-Tableau-Auth" value="[Access Token]" />
+                            </headers>
+                            <bodycontent type="0"></bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Site Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of the site that contains the workbooks.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Access Token" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The authenticate token to consume Tableau endpoint services.]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters>
+                                <customoutputparameter type="CustomCode" name="Json Response" datatype="text"></customoutputparameter>
+                                <customoutputparameter type="CustomCode" name="Message" datatype="text"></customoutputparameter>
+                            </parameters>
+                            <code><![CDATA[XmlDocument doc = new XmlDocument();
+Json_Response = string.Empty;
+Message = string.Empty;
+
+try
+{
+	//Using regex to remove <?xml .. ?> tag from the xml response content
+	doc.LoadXml(Regex.Replace(Response_Content, "^<?.*? ?>", ""));
+
+	//Convert document 
+	string json = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, true);
+	
+	//Query credentials as the JSON Response
+	JObject o = JObject.Parse(json);
+	JToken jsPath = o.SelectToken("$.workbooks");
+
+	Json_Response = jsPath.ToString();
+}
+catch(Exception ex)
+{
+	Message = ex.ToString();
+}]]></code>
+                        </outputparameters>
+                    </action>
+                    <action id="5134" name="Update Workbook" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[Modifies an existing workbook, allowing you to change the owner or project that the workbook belongs to and whether the workbook shows views in tabs.]]></description>
+                        <request httpmethod="PUT" urlpath="api/[Api Version]/sites/[Site Id]/workbooks/[Workbook Id]">
+                            <headers>
+                                <httpheader name="X-Tableau-Auth" value="[Access Token]" />
+                            </headers>
+                            <bodycontent type="1">
+                                <template><![CDATA[<tsRequest>
+  <workbook showTabs="[Show Tab Flag]" recentlyViewed="[Recently Viewed Flag]" encryptExtracts="[Encrypt Extracts Flag]" >
+  	<project id="[Project Id]" />
+    <owner id="[Owner Id]" />
+ </workbook>
+</tsRequest>]]></template>
+                            </bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Site Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of the site that contains the workbook.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Workbook Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of the workbook to update.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Show Tab Flag" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[Specify true to have the updated workbook show views in tabs; otherwise, false. The default is false.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Recently Viewed Flag" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[Set this value to true to have the updated workbook show in the site's recently viewed list. The default is false.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Encrypt Extracts Flag" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[Set true to encrypt the extracts or false to not encrypt extracts]]></description>
+                            </actionparameter>
+                            <actionparameter name="Project Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of a project to assign the workbook to.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Owner Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of a user to assign the workbook to as owner.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Access Token" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The authenticate token to consume Tableau endpoint services.]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters>
+                                <customoutputparameter type="CustomCode" name="Json Response" datatype="text"></customoutputparameter>
+                                <customoutputparameter type="CustomCode" name="Message" datatype="text"></customoutputparameter>
+                            </parameters>
+                            <code><![CDATA[XmlDocument doc = new XmlDocument();
+Json_Response = string.Empty;
+Message = string.Empty;
+
+try
+{
+	//Using regex to remove <?xml .. ?> tag from the xml response content
+	doc.LoadXml(Regex.Replace(Response_Content, "^<?.*? ?>", ""));
+
+	//Convert document 
+	string json = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, true);
+	
+	//Query credentials as the JSON Response
+	JObject o = JObject.Parse(json);
+	JToken jsPath = o.SelectToken("$.workbook");
+
+	Json_Response = jsPath.ToString();
+}
+catch(Exception ex)
+{
+	Message = ex.ToString();
+}]]></code>
+                        </outputparameters>
+                    </action>
+                    <action id="5135" name="Query Workbook" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[Returns information about the specified workbook, including information about views and tags.]]></description>
+                        <request httpmethod="GET" urlpath="api/[Api Version]/sites/[Site Id]/workbooks/[Workbook Id]">
+                            <headers>
+                                <httpheader name="X-Tableau-Auth" value="[Access Token]" />
+                            </headers>
+                            <bodycontent type="0"></bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Site Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of the site that contains the workbook.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Workbook Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of the workbook to return information about.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Access Token" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The authenticate token to consume Tableau endpoint services.]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters>
+                                <customoutputparameter type="CustomCode" name="Json Response" datatype="text"></customoutputparameter>
+                                <customoutputparameter type="CustomCode" name="Message" datatype="text"></customoutputparameter>
+                            </parameters>
+                            <code><![CDATA[XmlDocument doc = new XmlDocument();
+Json_Response = string.Empty;
+Message = string.Empty;
+
+try
+{
+	//Using regex to remove <?xml .. ?> tag from the xml response content
+	doc.LoadXml(Regex.Replace(Response_Content, "^<?.*? ?>", ""));
+
+	//Convert document 
+	string json = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, true);
+	
+	//Query credentials as the JSON Response
+	JObject o = JObject.Parse(json);
+	JToken jsPath = o.SelectToken("$.workbook");
+
+	Json_Response = jsPath.ToString();
+}
+catch(Exception ex)
+{
+	Message = ex.ToString();
+}]]></code>
+                        </outputparameters>
+                    </action>
+                    <action id="5136" name="Delete Workbook" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[Deletes a workbook. When a workbook is deleted, all of its assets are also deleted, including associated views, data connections, and so on.]]></description>
+                        <request httpmethod="DELETE" urlpath="api/[Api Version]/sites/[Site Id]/workbooks/[Workbook Id]">
+                            <headers>
+                                <httpheader name="X-Tableau-Auth" value="[Access Token]" />
+                            </headers>
+                            <bodycontent type="0"></bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Site Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of the site that contains the workbook.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Workbook Id" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The ID of the workbook to return information about.]]></description>
+                            </actionparameter>
+                            <actionparameter name="Access Token" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The authenticate token to consume Tableau endpoint services.]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters />
+                            <code><![CDATA[]]></code>
+                        </outputparameters>
+                    </action>
+                    <action id="5137" name="Sign Out" enabled="true" enableRequestOutputParameter="false" disableSendingOfRequest="false">
+                        <description><![CDATA[]]></description>
+                        <request httpmethod="POST" urlpath="/api/[Api Version]/auth/signout">
+                            <headers>
+                                <httpheader name="X-Tableau-Auth" value="[Access Token]" />
+                            </headers>
+                            <bodycontent type="0"></bodycontent>
+                        </request>
+                        <parameters>
+                            <actionparameter name="Access Token" expose="true" datatype="64">
+                                <initialvalue><![CDATA[]]></initialvalue>
+                                <description><![CDATA[The authenticate token to consume Tableau endpoint services.]]></description>
+                            </actionparameter>
+                        </parameters>
+                        <outputparameters>
+                            <parameters />
+                            <code><![CDATA[]]></code>
+                        </outputparameters>
+                    </action>
+                </actions>
+                <commonparameters>
+                    <actionparameter name="Base Url" expose="true" datatype="64">
+                        <initialvalue><![CDATA[]]></initialvalue>
+                        <description><![CDATA[The Tableau Online server address.]]></description>
+                    </actionparameter>
+                    <actionparameter name="Api Version" expose="true" datatype="64">
+                        <initialvalue><![CDATA[3.4]]></initialvalue>
+                        <description><![CDATA[The version of the API to use.]]></description>
+                    </actionparameter>
+                </commonparameters>
+                <commonheaders />
+                <commonauthentications>
+                    <authentication type="0" />
+                </commonauthentications>
+                <commoncode>
+                    <codeproperties code="" language="csharp">
+                        <namespaces>
+                            <namespace>System</namespace>
+                            <namespace>System.Drawing</namespace>
+                            <namespace>System.Data</namespace>
+                            <namespace>Newtonsoft.Json</namespace>
+                            <namespace>System.Xml</namespace>
+                            <namespace>Newtonsoft.Json.Linq</namespace>
+                            <namespace>System.Text.RegularExpressions</namespace>
+                        </namespaces>
+                        <references>
+                            <reference>System.dll</reference>
+                            <reference>System.Data.dll</reference>
+                            <reference>System.Xml.dll</reference>
+                            <reference>System.Drawing.dll</reference>
+                            <reference>Newtonsoft.Json.dll</reference>
+                            <reference>System.Core.dll</reference>
+                        </references>
+                    </codeproperties>
+                </commoncode>
+                <configurationsettings>
+                    <configurationsettings requesttimeout="10" authserverrequesttimeout="10" />
+                </configurationsettings>
+            </configuration>
+        </webapiservice>
+    </bpr:contents>
+</bpr:release>
